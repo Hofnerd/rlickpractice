@@ -1,3 +1,4 @@
+// Bridge definition for our QObject
 #[cxx_qt::bridge]
 mod my_object {
     #[cxx_qt::qobject(qml_uri = "demo", qml_version = "1.0")]

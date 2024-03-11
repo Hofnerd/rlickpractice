@@ -1,13 +1,14 @@
-import QtQuick.controls 2.21
-import QtQuick.Window 2.21
+import QtQuick 2.3
+import QtQuick.Controls 2.3
+import QtQuick.Window 2.3
 
 import demo 1.0
 
 Window {
-    Title: qsTr("Hello App")
+    title: qsTr("Hello App")
     visible: true
     height: 480
-    widget: 640
+    width: 640
     color: "#e4af79"
 
     Hello {
