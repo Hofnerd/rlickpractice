@@ -1,4 +1,4 @@
-use cxx_qt_build::CxxQtBuilder;
+use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
     CxxQtBuilder::new()
@@ -8,11 +8,11 @@ fn main() {
     // - Qt Qml is linked by enabling the qt_qml Cargo feature (default).
     // - Qt Qml requires linking Qt Network on macOS
     .qt_module("Network")
-    // Generate C++ from the `#[cxx_qt::bridge]` module
-    .file("src/cxxqt_object.rs")
-    // Generate C++ code from the .qrc file with the rcc tool
-    // https://doc.qt.io/qt-6/resources.html
-    .qrc("qml/qml.qrc")
-    .setup_linker()
+    .qml_module(QmlModule {
+        uri: "demo",
+        rust_files: &["src/cxxqt_object.rs"],
+        qml_files: &["qml/main.qml"],
+        ..Default::default()
+    })
     .build();
 }

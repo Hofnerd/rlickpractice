@@ -1,14 +1,27 @@
-// Bridge definition for our QObject
 #[cxx_qt::bridge]
-mod my_object {
-    #[cxx_qt::qobject(qml_uri = "demo", qml_version = "1.0")]
-    #[derive(Default)]
-    pub struct Hello {}
+pub mod qobject {
+    unsafe extern "RustQt" {
+        // QObject definition
+        #[qobject]
+        #[qml_element]
+        #[qproperty(i32, number)]
+        type Hello = super::HelloRust;
+    }
 
-    impl qobject::Hello {
+    unsafe extern "RustQt" {
+        // declare invokeable methods
         #[qinvokable]
-        pub fn say_hello (&self) {
-            println!("Hello World!")
-        }
+        fn say_hello(self: &Hello);
+    }
+}
+
+#[derive(Default)]
+pub struct HelloRust {
+    number : i32,
+}
+
+impl qobject::Hello {
+    pub fn say_hello(&self) {
+        println!("Hello World!");
     }
 }

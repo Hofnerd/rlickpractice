@@ -1,29 +1,44 @@
-import QtQuick 2.3
-import QtQuick.Controls 2.3
-import QtQuick.Window 2.3
+import QtQuick 2.12
+import QtQuick.Controls 2.12
+import QtQuick.Window 2.12
+import QtQuick.Layouts
 
+// import demo
 import demo 1.0
+// import sql
 
-Window {
-    title: qsTr("Hello App")
+ApplicationWindow {
     visible: true
-    height: 480
+    title: qsTr("Hello World")
     width: 640
-    color: "#e4af79"
+    height: 480
 
     Hello {
-        id: hello
+        id : myHello
+    }
+
+    // Menu
+    menuBar: MenuBar {
+        Menu {
+            title: qsTr("File")
+            MenuItem {
+                text: qsTr("&Open")
+                onTriggered: console.log("Open action triggered");
+            }
+            MenuItem {
+                text: qsTr("Exit")
+                onTriggered: Qt.quit();
+            }
+        }
     }
 
     Column {
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.verticalCenter: parent.verticalCenter
-        /* space between widget */
-        spacing: 10
-
+        anchors.fill: parent
+        anchors.margins: 10
+        spacing:10
         Button {
-            text: "Say Hello!"
-            onClicked: hello.sayHello()
+            text: qsTr("Say Hello")
+            onClicked: myHello.sayHello()
         }
     }
 }
