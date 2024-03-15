@@ -1,3 +1,5 @@
+use crate::sqlreader::SqlReader;
+
 #[cxx_qt::bridge]
 pub mod qobject {
     unsafe extern "RustQt" {
@@ -13,6 +15,17 @@ pub mod qobject {
         #[qinvokable]
         fn say_hello(self: &Hello);
     }
+
+    unsafe extern "RustQt" {
+        #[qobject]
+        #[qml_element]
+        type Reader = super::SqlReaderRust;
+    }
+
+    unsafe extern "RustQt" {
+        #[qinvokable]
+        fn test_connection(self: &Reader);
+    }
 }
 
 #[derive(Default)]
@@ -23,5 +36,16 @@ pub struct HelloRust {
 impl qobject::Hello {
     pub fn say_hello(&self) {
         println!("Hello World!");
+    }
+}
+
+#[derive(Default)]
+pub struct SqlReaderRust {
+}
+
+impl qobject::Reader {
+    pub fn test_connection(&self) {
+        let reader = SqlReader::new();
+        reader.acquire_connection();
     }
 }

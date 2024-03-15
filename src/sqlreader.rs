@@ -1,19 +1,17 @@
-use sqlx::{Pool, MySql, Error, MySqlPool, FromRow};
+use sqlx::{Error, FromRow, MySql, MySqlPool, Pool};
 use sqlx::types::chrono;
-use sqlx::types::chrono::{DateTime};
+use sqlx::types::chrono::DateTime;
 use async_std::task;
 
 #[derive(Default)]
-pub struct SqlReader {
-    test: u64,
-}
+pub struct SqlReader { }
 
 #[derive(FromRow)]
 struct Lick {
     id : i32,
     filename : String,
     learned : i32,
-    date_comp : DateTime<chrono::Utc>,
+    date_completed : DateTime<chrono::Utc>,
     date_sub : DateTime<chrono::Utc>,
 }
 
@@ -30,11 +28,17 @@ impl SqlReader {
                 println!("Cannot connect to database [{}]", err.to_string());
             }
 
-            Ok(_) => {
+            Ok(pool) => {
                 println!("Connected to database successfully.");
 
-                let query_result = 
-                    sqlx::query_as::<_, Lick>("select * from Licks where id='4'");
+                let query_result = sqlx::query_as::<_, Lick>("select * from Licks")
+                    .fetch_all(&pool).await.unwrap();
+
+                println!("Number of Licks selected: {}", query_result.len());
+
+                for i in query_result {
+                    println!("{} {} {} {} {}", i.id, i.filename, i.learned, i.date_completed, i.date_sub);
+                }
             }
         }
     }
@@ -44,9 +48,7 @@ impl SqlReader {
     }
 
     pub fn new() -> SqlReader {
-        SqlReader {
-            test : 10
-        }
+        SqlReader { }
     }
 
 }

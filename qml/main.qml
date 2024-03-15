@@ -3,9 +3,7 @@ import QtQuick.Controls 2.12
 import QtQuick.Window 2.12
 import QtQuick.Layouts
 
-// import demo
 import demo 1.0
-// import sql
 
 ApplicationWindow {
     visible: true
@@ -15,6 +13,10 @@ ApplicationWindow {
 
     Hello {
         id : myHello
+    }
+    
+    Reader {
+        id : sreader
     }
 
     // Menu
@@ -39,6 +41,11 @@ ApplicationWindow {
         Button {
             text: qsTr("Say Hello")
             onClicked: myHello.sayHello()
+        }
+
+        Button {
+            text: qsTr("Test Sql")
+            onClicked: sreader.testConnection();
         }
     }
 }
