@@ -11,14 +11,6 @@ ApplicationWindow {
     width: 640
     height: 480
 
-    Hello {
-        id : myHello
-    }
-    
-    Reader {
-        id : sreader
-    }
-
     // Menu
     menuBar: MenuBar {
         Menu {
@@ -31,21 +23,6 @@ ApplicationWindow {
                 text: qsTr("Exit")
                 onTriggered: Qt.quit();
             }
-        }
-    }
-
-    Column {
-        anchors.fill: parent
-        anchors.margins: 10
-        spacing:10
-        Button {
-            text: qsTr("Say Hello")
-            onClicked: myHello.sayHello()
-        }
-
-        Button {
-            text: qsTr("Test Sql")
-            onClicked: sreader.testConnection();
         }
     }
 }

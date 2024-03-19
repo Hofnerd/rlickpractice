@@ -7,7 +7,7 @@ use async_std::task;
 pub struct SqlReader { }
 
 #[derive(FromRow)]
-struct Lick {
+pub struct Lick {
     id : i32,
     filename : String,
     learned : i32,
@@ -42,13 +42,64 @@ impl SqlReader {
             }
         }
     }
-    
-    pub fn acquire_connection(&self) {
+
+    async fn get_lick_from_table(&self) -> Option<Vec<Lick>> {
+        let result = task::block_on(self.connect());
+
+        match result {
+            Err(_err) => {
+                return None;
+            }
+            Ok(pool) => {
+                let query_result = sqlx::query_as::<_, Lick>("select * from Licks")
+                    .fetch_all(&pool).await.unwrap();
+                return Some(query_result);
+            }
+        }
+    }
+
+    pub fn test_connection(&self) {
         task::block_on(self.do_test_connection());
+    }
+
+    pub fn get_licks(&self) {
+        let test = task::block_on(self.get_lick_from_table());
+        match test {
+            None => {
+                println!("Unable to grab any values");
+            }
+            Some(vals) => {
+                println!("Number of Licks selected: {}", vals.len());
+
+                for i in vals {
+                    println!("{} {} {} {} {}", i.id, i.filename, i.learned, i.date_completed, i.date_sub);
+                }
+            }
+        }
     }
 
     pub fn new() -> SqlReader {
         SqlReader { }
     }
 
+}
+
+impl Lick {
+    // pub fn new() -> Lick {
+    //     Lick {
+    //         id: 1,
+    //         filename: "tmp".to_string(),
+    //         learned: 0,
+    //         date_completed: DateTime::UNIX_EPOCH,
+    //         date_sub: DateTime::UNIX_EPOCH,
+    //     }
+    // }
+
+    pub fn get_id(&self) -> i32 {
+        return self.id;
+    }
+
+    pub fn get_learned(&self) -> i32 {
+        return self.learned;
+    }
 }
