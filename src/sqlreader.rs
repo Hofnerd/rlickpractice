@@ -6,7 +6,7 @@ use async_std::task;
 #[derive(Default)]
 pub struct SqlReader { }
 
-#[derive(FromRow)]
+#[derive(FromRow,Clone)]
 pub struct Lick {
     id : i32,
     filename : String,
@@ -62,9 +62,9 @@ impl SqlReader {
         task::block_on(self.do_test_connection());
     }
 
-    pub fn get_licks(&self) {
+    pub fn get_licks(&self) -> Option<Vec<Lick>>{
         let test = task::block_on(self.get_lick_from_table());
-        match test {
+        match test.clone() {
             None => {
                 println!("Unable to grab any values");
             }
@@ -76,6 +76,7 @@ impl SqlReader {
                 }
             }
         }
+        return test;
     }
 
     pub fn new() -> SqlReader {
@@ -85,15 +86,15 @@ impl SqlReader {
 }
 
 impl Lick {
-    // pub fn new() -> Lick {
-    //     Lick {
-    //         id: 1,
-    //         filename: "tmp".to_string(),
-    //         learned: 0,
-    //         date_completed: DateTime::UNIX_EPOCH,
-    //         date_sub: DateTime::UNIX_EPOCH,
-    //     }
-    // }
+    pub fn new() -> Lick {
+        Lick {
+            id: 1,
+            filename: "tmp".to_string(),
+            learned: 0,
+            date_completed: DateTime::UNIX_EPOCH,
+            date_sub: DateTime::UNIX_EPOCH,
+        }
+    }
 
     pub fn get_id(&self) -> i32 {
         return self.id;
