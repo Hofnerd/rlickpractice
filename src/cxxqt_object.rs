@@ -204,7 +204,6 @@ impl qobject::Reader {
 
     /// Add a new row to the QAbstractListModel on the current thread
     pub fn add(self: Pin<&mut Self>) {
-        println!("test");
         self.add_cpp_context();
     }
 

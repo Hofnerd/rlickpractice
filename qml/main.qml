@@ -34,26 +34,27 @@ ApplicationWindow {
         anchors.fill: parent
         Button {
             text: qsTr("Add Row")
-            onClicked: reader.getLicks()
+            onClicked: reader.add()
         }
-    }
-    ScrollView {
-        id: scroll
-        anchors.fill: parent
-        clip: true
-        ScrollBar.vertical.policy: ScrollBar.vertical.size === 1.0 ? ScrollBar.AlwaysOff : ScrollBar.AlwaysOn
+        ScrollView {
+            id: scroll
+            // anchors.fill: parent
+            clip: true
+            ScrollBar.vertical.policy: ScrollBar.vertical.size === 1.0 ? ScrollBar.AlwaysOff : ScrollBar.AlwaysOn
 
-        ListView {
-            id: listView
-            currentIndex: -1
-            model: reader
-            delegate: ItemDelegate {
-                highlighted: ListView.isCurrentItem
-                text: model.id
-                width: ListView.view.width
+            ListView {
+                id: listView
+                currentIndex: -1
+                model: reader
+                delegate: ItemDelegate {
+                    highlighted: ListView.isCurrentItem
+                    text: model.id
+                    width: ListView.view.width
 
-                onClicked: ListView.view.currentIndex = index
+                    onClicked: ListView.view.currentIndex = index
+                }
             }
         }
     }
+    
 }
