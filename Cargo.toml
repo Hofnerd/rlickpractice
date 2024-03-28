@@ -6,13 +6,16 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-sqlx = {version = "0.7.4", features = ["runtime-async-std", "mysql", "macros", "time", "chrono"]}
-time = {version = "0.3.34", features = ["formatting", "macros"]}
-async-std = "1.12.0"
-cxx = "1.0.119"
-cxx-qt = "0.6"
-cxx-qt-lib = "0.6"
+axum = "0.7.5"
+tokio = {version = "1.36.0", features = ["full"]}
+reqwest = {version = "0.11.20", features = ["json"] }
+serde = "1.0.188"
+sqlx = {version = "0.7.4", features = [
+    "runtime-tokio-rustls",
+    "macros",
+    "any",
+    "mysql"] }
+anyhow = "1.0.81"
+dotenv = "0.15.0"
+axum-macros = "0.4.1"
 
-[build-dependencies]
-cxx-build = {version = "1.0"}
-cxx-qt-build = {version = "0.6", features = ["link_qt_object_files" ]}
