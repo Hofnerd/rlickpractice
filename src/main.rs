@@ -27,13 +27,11 @@ async fn hello() -> &'static str {
 }
 
 async fn get_lick(pool: &MySqlPool, id: &i32) -> Result<Lick, anyhow::Error> {
+    let tmp = format!("SELECT id,filename,learned FROM Licks where id={}", id);
     let lick = sqlx::query_as::<_, Lick>(
-        "SELECT id,filename,learned FROM Licks where id=$1",)
-        .bind(id.to_string().as_str())
+        &tmp,)
         .fetch_optional(pool)
         .await?;
-
-    println!("done");
 
     if let Some(lick) = lick {
         return Ok(lick);
@@ -47,10 +45,9 @@ async fn db_get(Query(params): Query<DbQuery>, State(pool): State<MySqlPool>) ->
     let id: i32 = params.index;
     match get_lick(&pool, &id).await {
         Ok(lick) => Ok(format!(
-            "{}: {} {}", lick.id, lick.filename, lick.learned)),
+            "{}: {} {}\n", lick.id, lick.filename, lick.learned)),
         Err(_) => Err(StatusCode::NO_CONTENT),
     }
-
 }
 
 #[tokio::main]
