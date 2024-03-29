@@ -18,4 +18,6 @@ sqlx = {version = "0.7.4", features = [
 anyhow = "1.0.81"
 dotenv = "0.15.0"
 axum-macros = "0.4.1"
+askama = { version = "0.12.1", features = ["with-axum"] }
+askama_axum = "0.4.0"
 
