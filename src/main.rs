@@ -1,8 +1,8 @@
 use askama_axum::Template;
 use dotenv::dotenv;
-use anyhow::{anyhow, Context};
+use anyhow::Context;
 use axum::{
-    extract::{Query, State}, http::StatusCode, response::IntoResponse, routing::{get, post}, Form, Router
+    extract::State, http::StatusCode, response::IntoResponse, routing::{get, post}, Form, Router
 };
 use serde::Deserialize;
 use sqlx::MySqlPool;
@@ -24,25 +24,6 @@ impl<E> From<E> for AppError
         E: Into<anyhow::Error>, {
     fn from(err: E) -> Self {
         return Self(err.into());
-    }
-}
-
-#[derive(Deserialize, Debug, Template)]
-#[template(path = "lick.html")]
-pub struct LickDisplay {
-    pub id : i32,
-    pub filename: String,
-    pub learned: i32 
-}
-
-impl LickDisplay { 
-    fn new(id: i32, filename: String, learned: i32) -> Self {
-        let ld = LickDisplay {
-            id,
-            filename,
-            learned
-        };
-        return ld;
     }
 }
 
@@ -84,30 +65,6 @@ pub struct Lick {
 
 async fn index() -> IndexTemplate{
     return IndexTemplate;
-}
-
-async fn get_lick(pool: &MySqlPool, id: &i32) -> Result<Lick, anyhow::Error> {
-    let tmp = format!("SELECT id,filename,learned FROM Licks where id={}", id);
-    let lick = sqlx::query_as::<_, Lick>(
-        &tmp,)
-        .fetch_optional(pool)
-        .await?;
-
-    if let Some(lick) = lick {
-        return Ok(lick);
-    }
-    else {
-        return Err(anyhow!("Entry not found: {id}"));
-    }
-}
-
-async fn db_get(Query(params): Query<DbQuery>, State(pool): State<MySqlPool>) -> Result<LickDisplay, AppError> {
-    let id: i32 = params.id;
-    let lick = get_lick(&pool, &id).await?;
-    return Ok(LickDisplay::new(
-        lick.id,
-        lick.filename, 
-        lick.learned));
 }
 
 async fn add_lick_db(pool: &MySqlPool, filename: &String) -> Result<i32, anyhow::Error> {
@@ -155,7 +112,6 @@ async fn main() ->anyhow::Result<()>{
     // Build our app with a single orute
     let app = Router::new()
         .route("/", get(index))
-        .route("/db", get(db_get))
         .route("/licks", get(list_licks))
         .route("/add_lick", post(add_lick))
         .with_state(pool);

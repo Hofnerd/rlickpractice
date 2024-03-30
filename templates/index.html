@@ -1,27 +1,23 @@
-<form action="/db" method="get">
-    <!DOCTYPE html>
-    <html>
-        <head>
-            <title>Available Licks</title>
-        </head>
-        <body>
-            <div>
-                <h1>Licks</h1>
-                <form action="/db" method="get">
-                    <label for="id">Id:</label>
-                    <input type="text" id="id" name="id"></input>
-                    <input type="submit" value="Submit"></input>
-                </form>
-            </div>
-            <br>
-            <div>
-                <h1>Add File</h1>
-                <form action="/add_lick" method="post" id="add_form">
-                    <label for="file">Filename:</label>
-                    <input type="text" id="file" name="file"></input>
-                    <button type="submit" form="add_form" value="Submit">Submit</button>
-                </form>
-            </div>
-        </body>
-    </html>
-</form>
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Available Licks</title>
+    </head>
+    <body>
+        <div>
+            <h1>See Licks Table</h1>
+            <form action="/licks" method="get">
+                <input type="submit" value="Submit"></input>
+            </form>
+        </div>
+        <br>
+        <div>
+            <h1>Add File</h1>
+            <form action="/add_lick" method="post" id="add_form">
+                <label for="file">Filename:</label>
+                <input type="text" id="file" name="file"></input>
+                <button type="submit" form="add_form" value="Submit">Submit</button>
+            </form>
+        </div>
+    </body>
+</html>
