@@ -1,30 +1,33 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Available Licks</title>
-    </head>
-    <body>
-        <div>
-            <h1>See Licks Table</h1>
-            <form action="/licks" method="get">
-                <input type="submit" value="Submit"></input>
-            </form>
-        </div>
-        <br>
-        <div>
-            <H1>View PDF</h1>
-            <form action="/pdf" method="get">
-                <input type="submit" value="View"></input>
-            </form>
-        </div>
-        <br>
-        <div>
-            <h1>Add pdf</h1>
-            <form action="/" enctype="multipart/form-data" method="post">
-                <label for="pdf_upload"> Choose a file to upload:</label> 
-                <input type="file" name="upload_pdf" accept="application/pdf"/><br>
-                <input type="submit" value="Upload File"/>
-            </form>
-        </div>
-    </body>
+
+<head>
+    <title>Available Licks</title>
+</head>
+
+<body>
+    <div>
+        <h1>See Licks Table</h1>
+        <form action="/licks" method="get">
+            <input type="submit" value="Submit"></input>
+        </form>
+    </div>
+    <br>
+    <div>
+        <H1>View PDF</h1>
+        <form action="/pdf" method="get">
+            <input type="submit" value="View"></input>
+        </form>
+    </div>
+    <br>
+    <div>
+        <h1>Add pdf</h1>
+        <form action="/" enctype="multipart/form-data" method="post">
+            <label for="pdf_upload"> Choose a file to upload:</label>
+            <input type="file" name="upload_pdf" accept="application/pdf" /><br>
+            <input type="submit" value="Upload File" />
+        </form>
+    </div>
+</body>
+
 </html>

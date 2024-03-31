@@ -1,18 +1,19 @@
-use std::fs;
-
-use askama_axum::Template;
-use dotenv::dotenv;
 use anyhow::Context;
+use askama_axum::Template;
 use axum::{
-    extract::Multipart,
-    extract::State, 
-    http::StatusCode, 
-    response::IntoResponse, 
-    routing::get, 
-    Router
+    extract::{Multipart, State},
+    http::StatusCode,
+    response::IntoResponse,
+    routing::get,
+    Router,
 };
+use dotenv::dotenv;
 use serde::Deserialize;
 use sqlx::MySqlPool;
+use tokio::fs;
+use tower::ServiceBuilder;
+use tower_http::{normalize_path::NormalizePathLayer, services::ServeDir, trace::TraceLayer};
+use tracing::Level;
 
 struct AppError(anyhow::Error);
 
@@ -27,8 +28,9 @@ impl IntoResponse for AppError {
 }
 
 impl<E> From<E> for AppError
-    where
-        E: Into<anyhow::Error>, {
+where
+    E: Into<anyhow::Error>,
+{
     fn from(err: E) -> Self {
         return Self(err.into());
     }
@@ -40,15 +42,12 @@ pub struct LicksDisplay {
     pub licks: Vec<Lick>,
 }
 
-impl LicksDisplay{
+impl LicksDisplay {
     fn new(licks: Vec<Lick>) -> Self {
-        let ld = LicksDisplay {
-            licks
-        };
+        let ld = LicksDisplay { licks };
         return ld;
     }
 }
-
 
 #[derive(Deserialize, Debug, Template)]
 #[template(path = "lick_pdf.html")]
@@ -56,12 +55,10 @@ pub struct PdfDisplay {
     pub pdf: String,
 }
 
-impl PdfDisplay{
-    fn new(filename: String) -> Self {
-        let ld = PdfDisplay {
-            pdf: filename
-        };
-        return ld;
+impl PdfDisplay {
+    fn new(name: String) -> Self {
+        let pd = PdfDisplay { pdf: name };
+        return pd;
     }
 }
 
@@ -81,12 +78,12 @@ pub struct DbAdd {
 
 #[derive(sqlx::FromRow, Deserialize, Debug, Clone)]
 pub struct Lick {
-    id : i32,
-    filename : String,
-    learned : i32,
+    id: i32,
+    filename: String,
+    learned: i32,
 }
 
-async fn index() -> IndexTemplate{
+async fn index() -> IndexTemplate {
     return IndexTemplate;
 }
 
@@ -109,7 +106,9 @@ async fn grab_file(pool: &MySqlPool) -> Result<String, anyhow::Error> {
 
 async fn serve_pdf(State(pool): State<MySqlPool>) -> Result<PdfDisplay, AppError> {
     let filename = grab_file(&pool).await?;
-    return Ok(PdfDisplay::new(filename));
+    let file = filename.split(".").collect::<Vec<&str>>()[1];
+    let file = file.to_owned() + ".pdf";
+    return Ok(PdfDisplay::new(file));
 }
 
 async fn add_lick_db(pool: &MySqlPool, filename: &String) -> Result<i32, anyhow::Error> {
@@ -118,27 +117,29 @@ async fn add_lick_db(pool: &MySqlPool, filename: &String) -> Result<i32, anyhow:
     return Ok(0);
 }
 
-async fn upload_lick_pdf(State(pool):State<MySqlPool>, mut multipart: Multipart) -> IndexTemplate{
-    while let Some(field) = multipart.next_field().await.unwrap() {
-        let name = field.name().unwrap().to_string();
-        let ctype = field.content_type().unwrap().to_string();
-        let data = field.bytes().await.unwrap();
-        println!("Length of '{}' is {} bytes; type {}", 
-            name, 
-            data.len(),
-            ctype);
+async fn upload_lick_pdf(
+    State(pool): State<MySqlPool>,
+    mut multipart: Multipart,
+) -> Result<IndexTemplate, AppError> {
+    while let Some(field) = multipart.next_field().await? {
+        let name = field.name().expect("Name not included").to_string();
+        let ctype = field
+            .content_type()
+            .expect("Content Type not specified")
+            .to_string();
+        let data = field.bytes().await?;
         if ctype.contains("pdf") {
-            let filename = format!("./data/{}.pdf",name);
-            let _ = fs::write(&filename, data);
-            let _ = add_lick_db(&pool, &filename).await;
+            let filename = format!("./data/{}.pdf", name);
+            let _ = fs::write(&filename, data).await?;
+            let _ = add_lick_db(&pool, &filename).await?;
         }
     }
 
-    return IndexTemplate;
+    return Ok(IndexTemplate);
 }
 
 #[tokio::main]
-async fn main() ->anyhow::Result<()>{
+async fn main() -> anyhow::Result<()> {
     // Use dotenv to load the .env file for the database url
     dotenv().ok();
     let db_connection_str = std::env::var("DATABASE_URL").context("DATABASE_URL must be set")?;
@@ -146,14 +147,23 @@ async fn main() ->anyhow::Result<()>{
         .await
         .context("cant connect to database")?;
 
-    // Build our app with a single orute
+    let service = ServiceBuilder::new()
+        .layer(TraceLayer::new_for_http())
+        .layer(NormalizePathLayer::trim_trailing_slash());
+
     let app = Router::new()
         .route("/", get(index).post(upload_lick_pdf))
         .route("/licks", get(list_licks))
         .route("/pdf", get(serve_pdf))
+        .layer(service)
+        .nest_service("/data", ServeDir::new("./data"))
         .with_state(pool);
+
+    tracing_subscriber::fmt::Subscriber::builder()
+        .with_max_level(Level::TRACE)
+        .init();
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
     axum::serve(listener, app).await?;
     Ok(())
-} 
+}
