@@ -1,7 +1,7 @@
 use anyhow::Context;
 use askama_axum::Template;
 use axum::{
-    extract::{Multipart, State},
+    extract::{Multipart, Query, State},
     http::StatusCode,
     response::IntoResponse,
     routing::get,
@@ -10,7 +10,7 @@ use axum::{
 use dotenv::dotenv;
 use serde::Deserialize;
 use sqlx::MySqlPool;
-use tokio::fs;
+use tokio::fs::{self, remove_file};
 use tower::ServiceBuilder;
 use tower_http::{normalize_path::NormalizePathLayer, services::ServeDir, trace::TraceLayer};
 use tracing::Level;
@@ -87,6 +87,12 @@ async fn index() -> IndexTemplate {
     return IndexTemplate;
 }
 
+async fn get_lick(pool: &MySqlPool, id: i32) -> Result<Lick, anyhow::Error> {
+    let tmp: String = format!("SELECT id,filename,learned FROM Licks where id = {id}");
+    let lick = sqlx::query_as(&tmp).fetch_one(pool).await?;
+    Ok(lick)
+}
+
 async fn get_licks(pool: &MySqlPool) -> Result<Vec<Lick>, anyhow::Error> {
     let tmp: String = format!("SELECT id,filename,learned FROM Licks");
     let licks = sqlx::query_as(&tmp).fetch_all(pool).await?;
@@ -104,17 +110,17 @@ async fn grab_file(pool: &MySqlPool) -> Result<String, anyhow::Error> {
     return Ok(lick.filename);
 }
 
+async fn add_lick_db(pool: &MySqlPool, filename: &String) -> Result<i32, anyhow::Error> {
+    let tmp = format!("INSERT INTO Licks (filename) values ('{}')", filename);
+    sqlx::query(&tmp).execute(pool).await?;
+    return Ok(0);
+}
+
 async fn serve_pdf(State(pool): State<MySqlPool>) -> Result<PdfDisplay, AppError> {
     let filename = grab_file(&pool).await?;
     let file = filename.split(".").collect::<Vec<&str>>()[1];
     let file = file.to_owned() + ".pdf";
     return Ok(PdfDisplay::new(file));
-}
-
-async fn add_lick_db(pool: &MySqlPool, filename: &String) -> Result<i32, anyhow::Error> {
-    let tmp = format!("INSERT INTO Licks (filename) values ('{}')", filename);
-    sqlx::query(&tmp).execute(pool).await?;
-    return Ok(0);
 }
 
 async fn upload_lick_pdf(
@@ -138,6 +144,30 @@ async fn upload_lick_pdf(
     return Ok(IndexTemplate);
 }
 
+async fn del_lick(pool: &MySqlPool, id: i32) -> Result<i32, anyhow::Error> {
+    let tmp: String = format!("delete FROM Licks where id ={id}");
+    let _ = sqlx::query(&tmp).execute(pool).await?;
+    Ok(1)
+}
+
+async fn delete_entry(
+    State(pool): State<MySqlPool>,
+    Query(params): Query<DbQuery>,
+) -> Result<LicksDisplay, AppError> {
+    let id: i32 = params.id;
+    let lick = match get_lick(&pool, id).await {
+        Ok(lick) => lick,
+        Err(_) => {
+            let list = get_licks(&pool).await?;
+            return Ok(LicksDisplay::new(list));
+        }
+    };
+    let _ = del_lick(&pool, id).await?;
+    let _ = remove_file(lick.filename).await?;
+    let list = get_licks(&pool).await?;
+    return Ok(LicksDisplay::new(list));
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // Use dotenv to load the .env file for the database url
@@ -153,6 +183,7 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/", get(index).post(upload_lick_pdf))
+        .route("/dellick", get(delete_entry))
         .route("/licks", get(list_licks))
         .route("/pdf", get(serve_pdf))
         .layer(service)

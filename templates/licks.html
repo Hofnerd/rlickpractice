@@ -22,6 +22,11 @@
                 <td> {{ lick.id }} </td>
                 <td> {{ lick.filename }} </td>
                 <td> {{ lick.learned }} </td>
+                <td>
+                    <form action="/dellick" method="get" id="id">
+                        <button type="submit" name="id" value={{lick.id}}>Delete</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
