@@ -9,6 +9,7 @@ use axum::{
 };
 use axum_typed_multipart::{TryFromMultipart, TypedMultipart};
 use dotenv::dotenv;
+use rand::Rng;
 use serde::Deserialize;
 use sqlx::MySqlPool;
 use tokio::fs::{self, remove_file};
@@ -77,6 +78,12 @@ pub struct DbAdd {
     pub file: String,
 }
 
+#[derive(TryFromMultipart, Clone, Debug)]
+struct PdfForm {
+    name: String,
+    pdf: axum::body::Bytes,
+}
+
 #[derive(sqlx::FromRow, Deserialize, Debug, Clone)]
 pub struct Lick {
     id: i32,
@@ -135,20 +142,29 @@ async fn serve_pdf(
     return Ok(PdfDisplay::new(file));
 }
 
-#[derive(TryFromMultipart, Clone, Debug)]
-struct PdfForm {
-    name: String,
-    pdf: axum::body::Bytes,
+async fn check_incoming_pdf(pool: &MySqlPool, data: &TypedMultipart<PdfForm>) -> bool {
+    let filename = format!("./data/{}.pdf", data.name);
+
+    let query = format!("select id from Licks where filename=\"{}\"", filename);
+    println!("{}", &query);
+    let _ = match sqlx::query(&query).fetch_one(pool).await {
+        Ok(_) => return false,
+        Err(_) => return true,
+    };
 }
 
 async fn upload_lick_pdf(
     State(pool): State<MySqlPool>,
     data: TypedMultipart<PdfForm>,
 ) -> Result<IndexTemplate, AppError> {
-    let filename = format!("./data/{}.pdf", data.name);
-    let _ = fs::write(&filename, data.pdf.clone()).await?;
-    let _ = add_lick_db(&pool, &data.name, &filename).await?;
-    return Ok(IndexTemplate);
+    if check_incoming_pdf(&pool, &data).await {
+        let filename = format!("./data/{}.pdf", data.name);
+        let _ = fs::write(&filename, data.pdf.clone()).await?;
+        let _ = add_lick_db(&pool, &data.name, &filename).await?;
+        return Ok(IndexTemplate);
+    } else {
+        return Ok(IndexTemplate);
+    }
 }
 
 async fn del_lick(pool: &MySqlPool, id: i32) -> Result<i32, anyhow::Error> {
@@ -175,6 +191,23 @@ async fn delete_entry(
     return Ok(LicksDisplay::new(list));
 }
 
+async fn grab_random_file(pool: &MySqlPool) -> Result<String, anyhow::Error> {
+    let id_query = format!("SELECT id,name,filename,learned from Licks");
+    let ids: Vec<Lick> = sqlx::query_as(&id_query).fetch_all(pool).await?;
+    let random_id = rand::thread_rng().gen_range(0..ids.len());
+    let tmp: String = format!(
+        "SELECT id,name,filename,learned from Licks where id={}",
+        ids[random_id].id
+    );
+    let lick: Lick = sqlx::query_as(&tmp).fetch_one(pool).await?;
+    return Ok(lick.filename);
+}
+
+async fn random_lick(State(pool): State<MySqlPool>) -> Result<PdfDisplay, AppError> {
+    let file = grab_random_file(&pool).await?;
+    return Ok(PdfDisplay::new(file));
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // Use dotenv to load the .env file for the database url
@@ -190,6 +223,7 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/", get(index).post(upload_lick_pdf))
+        .route("/rand", get(random_lick))
         .route("/dellick", get(delete_entry))
         .route("/licks", get(list_licks))
         .route("/pdf", get(serve_pdf))
@@ -197,9 +231,9 @@ async fn main() -> anyhow::Result<()> {
         .nest_service("/data", ServeDir::new("./data"))
         .with_state(pool);
 
-    // tracing_subscriber::fmt::Subscriber::builder()
-    //     .with_max_level(Level::TRACE)
-    //     .init();
+    tracing_subscriber::fmt::Subscriber::builder()
+        .with_max_level(Level::TRACE)
+        .init();
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
     axum::serve(listener, app).await?;

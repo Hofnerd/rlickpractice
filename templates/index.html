@@ -7,9 +7,16 @@
 
 <body>
     <div>
-        <h1>See Licks Table</h1>
+        <h1>See Table</h1>
         <form action="/licks" method="get">
             <input type="submit" value="Submit"></input>
+        </form>
+    </div>
+    <br>
+    <div>
+        <h1>Random Lick</h1>
+        <form action="/rand" method="get">
+            <input type="submit" value="Random"></input>
         </form>
     </div>
     <br>
@@ -17,7 +24,7 @@
         <h1>Add pdf</h1>
         <form action="/" enctype="multipart/form-data" method="post">
             <label for="pdf_upload"> Choose a file to upload:</label>
-            <input type="text" name="name" value="name" />
+            <input type="text" name="name" />
             <input type="file" name="pdf" accept="application/pdf" />
             <input type="submit" value="Upload File" />
         </form>

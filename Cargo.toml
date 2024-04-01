@@ -26,3 +26,4 @@ tower-http = {version = "0.5.2", features = ["fs", "trace", "normalize-path"] }
 tracing-subscriber = "0.3.18"
 tracing = "0.1.40"
 axum_typed_multipart = "0.11.0"
+rand = "0.8.5"
