@@ -1,12 +1,13 @@
 use anyhow::Context;
 use askama_axum::Template;
 use axum::{
-    extract::{Multipart, Query, State},
+    extract::{Query, State},
     http::StatusCode,
     response::IntoResponse,
     routing::get,
     Router,
 };
+use axum_typed_multipart::{TryFromMultipart, TypedMultipart};
 use dotenv::dotenv;
 use serde::Deserialize;
 use sqlx::MySqlPool;
@@ -79,6 +80,7 @@ pub struct DbAdd {
 #[derive(sqlx::FromRow, Deserialize, Debug, Clone)]
 pub struct Lick {
     id: i32,
+    name: String,
     filename: String,
     learned: i32,
 }
@@ -88,13 +90,13 @@ async fn index() -> IndexTemplate {
 }
 
 async fn get_lick(pool: &MySqlPool, id: i32) -> Result<Lick, anyhow::Error> {
-    let tmp: String = format!("SELECT id,filename,learned FROM Licks where id = {id}");
+    let tmp: String = format!("SELECT id,name,filename,learned FROM Licks where id = {id}");
     let lick = sqlx::query_as(&tmp).fetch_one(pool).await?;
     Ok(lick)
 }
 
 async fn get_licks(pool: &MySqlPool) -> Result<Vec<Lick>, anyhow::Error> {
-    let tmp: String = format!("SELECT id,filename,learned FROM Licks");
+    let tmp: String = format!("SELECT id,name,filename,learned FROM Licks");
     let licks = sqlx::query_as(&tmp).fetch_all(pool).await?;
     Ok(licks)
 }
@@ -104,43 +106,48 @@ async fn list_licks(State(pool): State<MySqlPool>) -> Result<LicksDisplay, AppEr
     return Ok(LicksDisplay::new(licks));
 }
 
-async fn grab_file(pool: &MySqlPool) -> Result<String, anyhow::Error> {
-    let tmp: String = format!("SELECT id,filename,learned from Licks LIMIT 1");
+async fn grab_file(pool: &MySqlPool, id: i32) -> Result<String, anyhow::Error> {
+    let tmp: String = format!("SELECT id,name,filename,learned from Licks where id={}", id);
     let lick: Lick = sqlx::query_as(&tmp).fetch_one(pool).await?;
     return Ok(lick.filename);
 }
 
-async fn add_lick_db(pool: &MySqlPool, filename: &String) -> Result<i32, anyhow::Error> {
-    let tmp = format!("INSERT INTO Licks (filename) values ('{}')", filename);
+async fn add_lick_db(
+    pool: &MySqlPool,
+    name: &String,
+    filename: &String,
+) -> Result<i32, anyhow::Error> {
+    let tmp = format!(
+        "INSERT INTO Licks (name,filename) values ('{}','{}')",
+        name, filename
+    );
     sqlx::query(&tmp).execute(pool).await?;
     return Ok(0);
 }
 
-async fn serve_pdf(State(pool): State<MySqlPool>) -> Result<PdfDisplay, AppError> {
-    let filename = grab_file(&pool).await?;
+async fn serve_pdf(
+    Query(params): Query<DbQuery>,
+    State(pool): State<MySqlPool>,
+) -> Result<PdfDisplay, AppError> {
+    let filename = grab_file(&pool, params.id).await?;
     let file = filename.split(".").collect::<Vec<&str>>()[1];
     let file = file.to_owned() + ".pdf";
     return Ok(PdfDisplay::new(file));
 }
 
+#[derive(TryFromMultipart, Clone, Debug)]
+struct PdfForm {
+    name: String,
+    pdf: axum::body::Bytes,
+}
+
 async fn upload_lick_pdf(
     State(pool): State<MySqlPool>,
-    mut multipart: Multipart,
+    data: TypedMultipart<PdfForm>,
 ) -> Result<IndexTemplate, AppError> {
-    while let Some(field) = multipart.next_field().await? {
-        let name = field.name().expect("Name not included").to_string();
-        let ctype = field
-            .content_type()
-            .expect("Content Type not specified")
-            .to_string();
-        let data = field.bytes().await?;
-        if ctype.contains("pdf") {
-            let filename = format!("./data/{}.pdf", name);
-            let _ = fs::write(&filename, data).await?;
-            let _ = add_lick_db(&pool, &filename).await?;
-        }
-    }
-
+    let filename = format!("./data/{}.pdf", data.name);
+    let _ = fs::write(&filename, data.pdf.clone()).await?;
+    let _ = add_lick_db(&pool, &data.name, &filename).await?;
     return Ok(IndexTemplate);
 }
 
@@ -190,9 +197,9 @@ async fn main() -> anyhow::Result<()> {
         .nest_service("/data", ServeDir::new("./data"))
         .with_state(pool);
 
-    tracing_subscriber::fmt::Subscriber::builder()
-        .with_max_level(Level::TRACE)
-        .init();
+    // tracing_subscriber::fmt::Subscriber::builder()
+    //     .with_max_level(Level::TRACE)
+    //     .init();
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
     axum::serve(listener, app).await?;

@@ -11,7 +11,9 @@
     <table>
         <thead>
             <tr>
+                <th> </th>
                 <th> ID </th>
+                <th> Name </th>
                 <th> Filename </th>
                 <th> Learned </th>
             </tr>
@@ -19,12 +21,18 @@
         <tbody>
             {% for lick in licks %}
             <tr>
+                <td>
+                    <form action="/pdf" method="get">
+                        <button type="submit" name="id" value={{ lick.id }}>View</button>
+                    </form>
+                </td>
                 <td> {{ lick.id }} </td>
+                <td> {{ lick.name }} </td>
                 <td> {{ lick.filename }} </td>
                 <td> {{ lick.learned }} </td>
                 <td>
-                    <form action="/dellick" method="get" id="id">
-                        <button type="submit" name="id" value={{lick.id}}>Delete</button>
+                    <form action="/dellick" method="get">
+                        <button type="submit" name="id" value={{ lick.id }}>Delete</button>
                     </form>
                 </td>
             </tr>
