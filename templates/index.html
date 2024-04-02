@@ -1,34 +1,25 @@
-<!DOCTYPE html>
-<html>
+<!---- templates/index.html --->
+{% extends "base.html" %}
 
-<head>
-    <title>Available Licks</title>
-</head>
-
-<body>
-    <div>
-        <h1>See Table</h1>
-        <form action="/licks" method="get">
-            <input type="submit" value="Submit"></input>
-        </form>
-    </div>
-    <br>
-    <div>
-        <h1>Random Lick</h1>
-        <form action="/rand" method="get">
-            <input type="submit" value="Random"></input>
-        </form>
-    </div>
-    <br>
-    <div>
-        <h1>Add pdf</h1>
-        <form action="/" enctype="multipart/form-data" method="post">
-            <label for="pdf_upload"> Choose a file to upload:</label>
-            <input type="text" name="name" />
-            <input type="file" name="pdf" accept="application/pdf" />
-            <input type="submit" value="Upload File" />
-        </form>
-    </div>
-</body>
-
-</html>
+{% block content %}
+<div id="licks_table">
+    <h1>Licks in database</h1>
+    {% include "licks_table.html" %}
+</div>
+<br>
+<div>
+    <h1>Random Lick</h1>
+    <button hx-get="/rand" hx-target="#pdf_view">Random</button>
+    <div id="pdf_view"></div>
+</div>
+<br>
+<div>
+    <h1>Add pdf</h1>
+    <form hx-post="/" hx-target="#table-content" hx-swap="beforeend" enctype="multipart/form-data">
+        <input type="text" name="name" />
+        <label> Choose a file to upload:</label>
+        <input type="file" name="pdf" accept="application/pdf" />
+        <button>Upload File</button>
+    </form>
+</div>
+{% endblock %}

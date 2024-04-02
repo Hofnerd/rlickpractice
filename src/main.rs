@@ -1,10 +1,10 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use askama_axum::Template;
 use axum::{
-    extract::{Query, State},
+    extract::{Path, Query, State},
     http::StatusCode,
     response::IntoResponse,
-    routing::get,
+    routing::{delete, get},
     Router,
 };
 use axum_typed_multipart::{TryFromMultipart, TypedMultipart};
@@ -39,19 +39,6 @@ where
 }
 
 #[derive(Deserialize, Debug, Template)]
-#[template(path = "licks.html")]
-pub struct LicksDisplay {
-    pub licks: Vec<Lick>,
-}
-
-impl LicksDisplay {
-    fn new(licks: Vec<Lick>) -> Self {
-        let ld = LicksDisplay { licks };
-        return ld;
-    }
-}
-
-#[derive(Deserialize, Debug, Template)]
 #[template(path = "lick_pdf.html")]
 pub struct PdfDisplay {
     pub pdf: String,
@@ -66,7 +53,27 @@ impl PdfDisplay {
 
 #[derive(Template)]
 #[template(path = "index.html")]
-struct IndexTemplate;
+struct IndexTemplate {
+    pub licks: Vec<Lick>,
+}
+
+impl IndexTemplate {
+    fn new(licks: Vec<Lick>) -> Self {
+        return IndexTemplate { licks };
+    }
+}
+
+#[derive(Template)]
+#[template(path = "lick.html")]
+struct CreateLickTemplate {
+    pub lick: Lick,
+}
+
+impl CreateLickTemplate {
+    fn new(lick: Lick) -> Self {
+        return CreateLickTemplate { lick };
+    }
+}
 
 #[derive(Deserialize)]
 pub struct DbQuery {
@@ -92,8 +99,9 @@ pub struct Lick {
     learned: i32,
 }
 
-async fn index() -> IndexTemplate {
-    return IndexTemplate;
+async fn index(State(pool): State<MySqlPool>) -> Result<IndexTemplate, AppError> {
+    let licks = get_licks(&pool).await?;
+    return Ok(IndexTemplate::new(licks));
 }
 
 async fn get_lick(pool: &MySqlPool, id: i32) -> Result<Lick, anyhow::Error> {
@@ -108,9 +116,9 @@ async fn get_licks(pool: &MySqlPool) -> Result<Vec<Lick>, anyhow::Error> {
     Ok(licks)
 }
 
-async fn list_licks(State(pool): State<MySqlPool>) -> Result<LicksDisplay, AppError> {
+async fn list_licks(State(pool): State<MySqlPool>) -> Result<IndexTemplate, AppError> {
     let licks = get_licks(&pool).await?;
-    return Ok(LicksDisplay::new(licks));
+    return Ok(IndexTemplate::new(licks));
 }
 
 async fn grab_file(pool: &MySqlPool, id: i32) -> Result<String, anyhow::Error> {
@@ -129,7 +137,42 @@ async fn add_lick_db(
         name, filename
     );
     sqlx::query(&tmp).execute(pool).await?;
-    return Ok(0);
+
+    let tmp = format!(
+        "SELECT id,name,filename,learned FROM Licks where filename=\'{}\'",
+        filename
+    );
+    let id: Lick = sqlx::query_as(&tmp).fetch_one(pool).await?;
+
+    return Ok(id.id);
+}
+
+async fn check_incoming_pdf(
+    pool: &MySqlPool,
+    data: &TypedMultipart<PdfForm>,
+) -> Result<bool, AppError> {
+    let filename = format!("./data/{}.pdf", data.name);
+    let query = format!("select id from Licks where filename=\"{}\"", filename);
+    println!("{}", &query);
+    let _ = match sqlx::query(&query).fetch_one(pool).await {
+        Ok(_) => return Ok(false),
+        Err(_) => return Ok(true),
+    };
+}
+
+async fn upload_lick_pdf(
+    State(pool): State<MySqlPool>,
+    data: TypedMultipart<PdfForm>,
+) -> Result<CreateLickTemplate, AppError> {
+    let res = check_incoming_pdf(&pool, &data).await?;
+    if res {
+        let filename = format!("./data/{}.pdf", data.name.replace(" ", "_"));
+        let _ = fs::write(&filename, data.pdf.clone()).await?;
+        let id = add_lick_db(&pool, &data.name, &filename).await?;
+        return Ok(CreateLickTemplate::new(get_lick(&pool, id).await?));
+    }
+
+    return Err(anyhow!(StatusCode::NOT_ACCEPTABLE).into());
 }
 
 async fn serve_pdf(
@@ -142,31 +185,6 @@ async fn serve_pdf(
     return Ok(PdfDisplay::new(file));
 }
 
-async fn check_incoming_pdf(pool: &MySqlPool, data: &TypedMultipart<PdfForm>) -> bool {
-    let filename = format!("./data/{}.pdf", data.name);
-
-    let query = format!("select id from Licks where filename=\"{}\"", filename);
-    println!("{}", &query);
-    let _ = match sqlx::query(&query).fetch_one(pool).await {
-        Ok(_) => return false,
-        Err(_) => return true,
-    };
-}
-
-async fn upload_lick_pdf(
-    State(pool): State<MySqlPool>,
-    data: TypedMultipart<PdfForm>,
-) -> Result<IndexTemplate, AppError> {
-    if check_incoming_pdf(&pool, &data).await {
-        let filename = format!("./data/{}.pdf", data.name);
-        let _ = fs::write(&filename, data.pdf.clone()).await?;
-        let _ = add_lick_db(&pool, &data.name, &filename).await?;
-        return Ok(IndexTemplate);
-    } else {
-        return Ok(IndexTemplate);
-    }
-}
-
 async fn del_lick(pool: &MySqlPool, id: i32) -> Result<i32, anyhow::Error> {
     let tmp: String = format!("delete FROM Licks where id ={id}");
     let _ = sqlx::query(&tmp).execute(pool).await?;
@@ -175,20 +193,19 @@ async fn del_lick(pool: &MySqlPool, id: i32) -> Result<i32, anyhow::Error> {
 
 async fn delete_entry(
     State(pool): State<MySqlPool>,
-    Query(params): Query<DbQuery>,
-) -> Result<LicksDisplay, AppError> {
-    let id: i32 = params.id;
+    Path(id): Path<i32>,
+) -> Result<IndexTemplate, AppError> {
     let lick = match get_lick(&pool, id).await {
         Ok(lick) => lick,
         Err(_) => {
             let list = get_licks(&pool).await?;
-            return Ok(LicksDisplay::new(list));
+            return Ok(IndexTemplate::new(list));
         }
     };
     let _ = del_lick(&pool, id).await?;
     let _ = remove_file(lick.filename).await?;
     let list = get_licks(&pool).await?;
-    return Ok(LicksDisplay::new(list));
+    return Ok(IndexTemplate::new(list));
 }
 
 async fn grab_random_file(pool: &MySqlPool) -> Result<String, anyhow::Error> {
@@ -223,8 +240,8 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/", get(index).post(upload_lick_pdf))
+        .route("/lick/:id", delete(delete_entry))
         .route("/rand", get(random_lick))
-        .route("/dellick", get(delete_entry))
         .route("/licks", get(list_licks))
         .route("/pdf", get(serve_pdf))
         .layer(service)

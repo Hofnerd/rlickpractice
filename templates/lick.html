@@ -1,0 +1,15 @@
+<tr id="lick-{{ lick.id }}">
+    <td>
+        <form hx-get="/pdf" hx-target="#ViewDiv">
+            <button value={{ lick.id }}>View</button>
+        </form>
+    </td>
+    <td> {{ lick.name }} </td>
+    <td> {{ lick.filename }} </td>
+    <td> {{ lick.learned }} </td>
+    <td>
+        <form hx-delete="/lick/{{lick.id}}" hx-target="#lick-{{ lick.id }}" hx-swap="delete">
+            <button value={{ lick.id }}>Delete</button>
+        </form>
+    </td>
+</tr>

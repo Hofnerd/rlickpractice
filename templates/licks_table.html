@@ -1,0 +1,20 @@
+<div id="table" style="display: flex: flex-direction: column">
+    <table>
+        <thead>
+            <tr>
+                <th> </th>
+                <th> Name </th>
+                <th> Filename </th>
+                <th> Learned </th>
+            </tr>
+        </thead>
+        <tbody id="table-content">
+            <div>
+                {% for lick in licks %}
+                {% include "lick.html" %}
+                {% endfor %}
+            </div>
+        </tbody>
+    </table>
+</div>
+<div id="ViewDiv"></div>
