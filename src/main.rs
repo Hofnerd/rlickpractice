@@ -234,6 +234,8 @@ async fn main() -> anyhow::Result<()> {
         .await
         .context("cant connect to database")?;
 
+    let assets_path = std::env::current_dir().unwrap();
+
     let service = ServiceBuilder::new()
         .layer(TraceLayer::new_for_http())
         .layer(NormalizePathLayer::trim_trailing_slash());
@@ -246,6 +248,10 @@ async fn main() -> anyhow::Result<()> {
         .route("/pdf", get(serve_pdf))
         .layer(service)
         .nest_service("/data", ServeDir::new("./data"))
+        .nest_service(
+            "/assets",
+            ServeDir::new(format!("{}/assets", assets_path.to_str().unwrap())),
+        )
         .with_state(pool);
 
     tracing_subscriber::fmt::Subscriber::builder()
