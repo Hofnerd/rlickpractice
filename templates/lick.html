@@ -1,7 +1,7 @@
-<tr id="lick-{{ lick.id }}">
+<tr id="lick-{{ lick.id }}" class="border rounded-lg">
     <td>
-        <form hx-get="/pdf" hx-target="#ViewDiv">
-            <button value={{ lick.id }}>View</button>
+        <form hx-get=" /pdf" hx-target="#ViewDiv">
+            <button class="rounded-md border" value={{ lick.id }}>View</button>
         </form>
     </td>
     <td> {{ lick.name }} </td>
@@ -9,7 +9,7 @@
     <td> {{ lick.learned }} </td>
     <td>
         <form hx-delete="/lick/{{lick.id}}" hx-target="#lick-{{ lick.id }}" hx-swap="delete">
-            <button value={{ lick.id }}>Delete</button>
+            <button class="rounded-md border" value={{ lick.id }}>Delete</button>
         </form>
     </td>
 </tr>
