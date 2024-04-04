@@ -6,9 +6,11 @@
     {% include "licks_table.html" %}
 </div>
 <br>
-<div>
-    <h1>Random Lick</h1>
-    <button hx-get="/rand" hx-target="#pdf_view">Random</button>
+<div class="border-bg p-4">
+    <div>
+        <span class="text-2xl">Random Lick</span>
+    </div>
+    <button class="inline-flex items-center justify-center whitespace-nowrap rounded-lg shadow text-sm text-black font-medium transition-colors duration-200 ease-in-out hover:bg-sail-950 bg-sail-800 h-10 px-4 py-2" hx-get="/rand" hx-target="#pdf_view">Random</button>
     <div id="pdf_view"></div>
 </div>
 <br>
@@ -20,16 +22,16 @@
                     <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="name">
                         Name
                     </label>
-                    <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="name" name="name" placeholder="Name"/>
+                    <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-sail-600" id="name" name="name" placeholder="Name"/>
                 </div>
                 <div class="grid gap-2 text-sm">
                     <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="file">
                         File
                     </label>
-                    <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="pdf" name="pdf" type="file" />
+                    <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-sail-600" id="pdf" name="pdf" type="file" />
                 </div>
                 <div>
-                    <button class="inline-flex items-center justify-center whitespace-nowrap rounded-lg shadow text-sm font-medium transition-colors duration-200 ease-in-out hover:bg-sail-950 bg-sail-800 h-10 px-4 py-2" type="submit">
+                    <button class="inline-flex items-center justify-center whitespace-nowrap rounded-lg shadow text-sm text-black font-medium transition-colors duration-200 ease-in-out hover:bg-sail-950 bg-sail-800 h-10 px-4 py-2" type="submit">
                     Submit
                     </button>
                 </div>
