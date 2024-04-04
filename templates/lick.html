@@ -1,15 +1,31 @@
-<tr id="lick-{{ lick.id }}" class="border rounded-lg">
-    <td>
-        <form hx-get=" /pdf" hx-target="#ViewDiv">
-            <button class="rounded-md border" value={{ lick.id }}>View</button>
-        </form>
-    </td>
-    <td> {{ lick.name }} </td>
-    <td> {{ lick.filename }} </td>
-    <td> {{ lick.learned }} </td>
-    <td>
+<tr id="lick-{{ lick.id }}" class="transition-colors hover:bg-sail-50 border-b transition-colors">
+    <td class="p-2 align-middle [&amp;:has([role=checkbox])]:pr-0"> {{ lick.name }} </td>
+    <td class="p-2 align-middle [&amp;:has([role=checkbox])]:pr-0"> {{ lick.learned }} </td>
+    <td class="p-2 align-middle [&amp;:has([role=checkbox])]:pr-0 flex justify-end">
         <form hx-delete="/lick/{{lick.id}}" hx-target="#lick-{{ lick.id }}" hx-swap="delete">
-            <button class="rounded-md border" value={{ lick.id }}>Delete</button>
+            <button
+                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-sail-950 bg-sail-800 h-9 w-9"
+                value={{ lick.id }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="w-4 h-4">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                </svg>
+            </button>
+        </form>
+        <form hx-get=" /pdf" hx-target="#ViewDiv">
+            <button
+                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-sail-950 bg-sail-800 h-9 w-9"
+                value={{ lick.id }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="w-4 h-4">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+            </button>
         </form>
     </td>
 </tr>

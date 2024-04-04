@@ -3,7 +3,6 @@
 
 {% block content %}
 <div id="licks_table">
-    <h1>Licks in database</h1>
     {% include "licks_table.html" %}
 </div>
 <br>
@@ -13,26 +12,29 @@
     <div id="pdf_view"></div>
 </div>
 <br>
-</div>
+<div class="text-sail-400">
     <form hx-post="/" hx-target="#table-content" hx-swap="beforeend" enctype="multipart/form-data">
-    <div class="rounded-lg border bg-card text-card-foreground shadow-sm" data-v0-t="card">
-        <div class="p-6 space-y-6">
-            <div class="grid gap-2 text-sm">
-                <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="name">
-                    Name
-                </label>
-                <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="name" placeholder="Name" required="">
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm" data-v0-t="card">
+            <div class="p-6 space-y-6">
+                <div class="grid gap-2 text-sm">
+                    <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="name">
+                        Name
+                    </label>
+                    <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="name" name="name" placeholder="Name"/>
+                </div>
+                <div class="grid gap-2 text-sm">
+                    <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="file">
+                        File
+                    </label>
+                    <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="pdf" name="pdf" type="file" />
+                </div>
+                <div>
+                    <button class="inline-flex items-center justify-center whitespace-nowrap rounded-lg shadow text-sm font-medium transition-colors duration-200 ease-in-out hover:bg-sail-950 bg-sail-800 h-10 px-4 py-2" type="submit">
+                    Submit
+                    </button>
+                </div>
             </div>
-            <div class="grid gap-2 text-sm">
-                <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="file">
-                    File
-                </label>
-                <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="file" required="" type="file">
-            </div>
-            <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2" type="submit">
-                Submit
-            </button>
         </div>
-    </div>
+    </form>
 </div>
 {% endblock %}

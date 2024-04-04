@@ -1,14 +1,13 @@
-<div id="table" class="inline-flex flex-row space-x-2 rounded-lg border">
-    <table>
-        <thead class="border rounded-lg">
-            <tr>
-                <th> </th>
-                <th> Name </th>
-                <th> Filename </th>
-                <th> Learned </th>
+<div id="table" class="relative w-full overlfow-auto">
+    <table class="w-full caption-bottom text-sm">
+        <thead class="border-b">
+            <tr class="border-b transition-colors hover:bg-sail-50 font-medium font-bold">
+                <th class="h-12 px-4 text-left align-middle"> Name </th>
+                <th class="h-12 px-4 text-left align-middle"> Learned </th>
+                <th class="h-12 px-4 text-left align-middle"> </th>
             </tr>
         </thead>
-        <tbody id="table-content">
+        <tbody id="table-content" class="[&amp;_tr:last-child]:border-0">
             <div>
                 {% for lick in licks %}
                 {% include "lick.html" %}

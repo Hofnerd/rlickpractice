@@ -749,8 +749,8 @@ select {
   --tw-contain-style:  ;
 }
 
-.mt-2 {
-  margin-top: 0.5rem;
+.relative {
+  position: relative;
 }
 
 .block {
@@ -777,12 +777,44 @@ select {
   height: 2.5rem;
 }
 
+.h-12 {
+  height: 3rem;
+}
+
+.h-5 {
+  height: 1.25rem;
+}
+
+.h-4 {
+  height: 1rem;
+}
+
+.h-9 {
+  height: 2.25rem;
+}
+
 .w-full {
   width: 100%;
 }
 
-.max-w-md {
-  max-width: 28rem;
+.w-5 {
+  width: 1.25rem;
+}
+
+.w-10 {
+  width: 2.5rem;
+}
+
+.w-4 {
+  width: 1rem;
+}
+
+.w-9 {
+  width: 2.25rem;
+}
+
+.caption-bottom {
+  caption-side: bottom;
 }
 
 .flex-row {
@@ -793,16 +825,12 @@ select {
   align-items: center;
 }
 
+.justify-end {
+  justify-content: flex-end;
+}
+
 .justify-center {
   justify-content: center;
-}
-
-.gap-0 {
-  gap: 0px;
-}
-
-.gap-0\.5 {
-  gap: 0.125rem;
 }
 
 .gap-2 {
@@ -833,26 +861,52 @@ select {
   border-radius: 0.375rem;
 }
 
+.rounded-sm {
+  border-radius: 0.125rem;
+}
+
 .border {
   border-width: 1px;
 }
 
-.border-0 {
-  border-width: 0px;
+.border-b {
+  border-bottom-width: 1px;
+}
+
+.border-black {
+  --tw-border-opacity: 1;
+  border-color: rgb(0 0 0 / var(--tw-border-opacity));
+}
+
+.bg-sail-400 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(82 180 222 / var(--tw-bg-opacity));
+}
+
+.bg-sail-800 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(24 85 116 / var(--tw-bg-opacity));
+}
+
+.bg-sail-700 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(25 100 139 / var(--tw-bg-opacity));
 }
 
 .p-6 {
   padding: 1.5rem;
 }
 
-.py-1 {
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
+.p-4 {
+  padding: 1rem;
 }
 
-.py-1\.5 {
-  padding-top: 0.375rem;
-  padding-bottom: 0.375rem;
+.p-2 {
+  padding: 0.5rem;
+}
+
+.p-1 {
+  padding: 0.25rem;
 }
 
 .px-3 {
@@ -860,14 +914,22 @@ select {
   padding-right: 0.75rem;
 }
 
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
 .py-2 {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
 }
 
-.px-4 {
-  padding-left: 1rem;
-  padding-right: 1rem;
+.text-left {
+  text-align: left;
+}
+
+.align-middle {
+  vertical-align: middle;
 }
 
 .text-sm {
@@ -879,12 +941,17 @@ select {
   font-weight: 500;
 }
 
-.leading-6 {
-  line-height: 1.5rem;
+.font-bold {
+  font-weight: 700;
 }
 
 .leading-none {
   line-height: 1;
+}
+
+.text-sail-400 {
+  --tw-text-opacity: 1;
+  color: rgb(82 180 222 / var(--tw-text-opacity));
 }
 
 .shadow-sm {
@@ -893,20 +960,28 @@ select {
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
-.ring-1 {
-  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
-  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);
-  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
-}
-
-.ring-inset {
-  --tw-ring-inset: inset;
+.shadow {
+  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
 .transition-colors {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+.duration-500 {
+  transition-duration: 500ms;
+}
+
+.duration-200 {
+  transition-duration: 200ms;
+}
+
+.ease-in-out {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .file\:border-0::file-selector-button {
@@ -924,6 +999,26 @@ select {
 
 .file\:font-medium::file-selector-button {
   font-weight: 500;
+}
+
+.hover\:bg-sail-950:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(17 45 64 / var(--tw-bg-opacity));
+}
+
+.hover\:bg-sail-100:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(228 241 250 / var(--tw-bg-opacity));
+}
+
+.hover\:bg-sail-50:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(242 249 253 / var(--tw-bg-opacity));
+}
+
+.hover\:bg-sail-900:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(25 71 97 / var(--tw-bg-opacity));
 }
 
 .focus-visible\:outline-none:focus-visible {
