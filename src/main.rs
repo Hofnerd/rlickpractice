@@ -15,6 +15,7 @@ use sqlx::MySqlPool;
 use tokio::fs::{self, remove_file};
 use tower::ServiceBuilder;
 use tower_http::{normalize_path::NormalizePathLayer, services::ServeDir, trace::TraceLayer};
+use tower_livereload::LiveReloadLayer;
 use tracing::Level;
 
 struct AppError(anyhow::Error);
@@ -238,7 +239,8 @@ async fn main() -> anyhow::Result<()> {
 
     let service = ServiceBuilder::new()
         .layer(TraceLayer::new_for_http())
-        .layer(NormalizePathLayer::trim_trailing_slash());
+        .layer(NormalizePathLayer::trim_trailing_slash())
+        .layer(LiveReloadLayer::new());
 
     let app = Router::new()
         .route("/", get(index).post(upload_lick_pdf))
@@ -246,12 +248,12 @@ async fn main() -> anyhow::Result<()> {
         .route("/rand", get(random_lick))
         .route("/licks", get(list_licks))
         .route("/pdf", get(serve_pdf))
-        .layer(service)
         .nest_service("/data", ServeDir::new("./data"))
         .nest_service(
             "/assets",
             ServeDir::new(format!("{}/assets", assets_path.to_str().unwrap())),
         )
+        .layer(service)
         .with_state(pool);
 
     tracing_subscriber::fmt::Subscriber::builder()
