@@ -1,19 +1,21 @@
-<div id="table" class="relative w-full overlfow-auto">
-    <table class="w-full caption-bottom text-sm">
-        <thead class="border-b">
-            <tr class="border-b transition-colors hover:bg-sail-50 font-medium font-bold">
-                <th class="h-12 px-4 text-left align-middle"> Name </th>
-                <th class="h-12 px-4 text-left align-middle"> Learned </th>
-                <th class="h-12 px-4 text-left align-middle"> </th>
-            </tr>
-        </thead>
-        <tbody id="table-content" class="[&amp;_tr:last-child]:border-0">
-            <div>
-                {% for lick in licks %}
-                {% include "lick.html" %}
-                {% endfor %}
-            </div>
-        </tbody>
-    </table>
+<div id="table" class="overflow-x-scroll max-h-60">
+    <div class="relative w-full">
+        <table class="w-full caption-bottom text-sm">
+            <thead class="border-b sticky top-0">
+                <tr class="border-b bg-sail-50 transition-colors hover:bg-sail-100 font-medium font-bold">
+                    <th class="h-12 px-4 text-left align-middle"> Name </th>
+                    <th class="h-12 px-4 text-left align-middle"> Learned </th>
+                    <th class="h-12 px-4 text-left align-middle"> </th>
+                </tr>
+            </thead>
+            <tbody id="table-content" class="[&amp;_tr:last-child]:border-0">
+                <div>
+                    {% for lick in licks %}
+                    {% include "lick.html" %}
+                    {% endfor %}
+                </div>
+            </tbody>
+        </table>
+    </div>
 </div>
 <div id="ViewDiv"></div>
