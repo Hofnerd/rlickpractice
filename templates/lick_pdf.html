@@ -1,1 +1,7 @@
-<object data={{pdf}} type="application/pdf" width="100%" height="700px"></object>
+<button
+    class="inline-flex items-center justify-center whitespace-nowrap rounded-lg shadow text-sm text-black font-medium transition-colors duration-200 ease-in-out hover:bg-sail-950 bg-sail-800 h-10 px-4 py-2"
+    hx-put="/lick/{{lick.id}}" hx-target=" #lick-{{ lick.id }}" hx-swap="outerHTML">Learned</button>
+<button
+    class="inline-flex items-center justify-center whitespace-nowrap rounded-lg shadow text-sm text-black font-medium transition-colors duration-200 ease-in-out hover:bg-sail-950 bg-sail-800 h-10 px-4 py-2"
+    hx-put="/pdf" hx-target="#ViewDiv" hx-swap="outerHTML">Close</button>
+<object data={{lick.filename}} type="application/pdf" width="100%" height="700px"></object>

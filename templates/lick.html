@@ -15,17 +15,19 @@
                 </svg>
             </button>
         </form>
-        <form hx-get=" /pdf" hx-target="#ViewDiv">
-            <button
-                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-sail-950 bg-sail-800 h-9 w-9"
-                value={{ lick.id }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    class="w-4 h-4">
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-            </button>
-        </form>
+        <div hx-include="#view-form">
+            <form id="view-form" hx-get="/pdf" hx-params="id" hx-target="#ViewDiv">
+                <button
+                    class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-sail-950 bg-sail-800 h-9 w-9"
+                    name="id" value={{ lick.id }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="w-4 h-4">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </button>
+            </form>
+        </div>
     </td>
 </tr>

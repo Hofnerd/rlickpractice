@@ -13,7 +13,12 @@ use rand::Rng;
 use serde::Deserialize;
 use sqlx::MySqlPool;
 use tokio::fs::{self, remove_file};
+use tower::ServiceBuilder;
+use tower_http::normalize_path::NormalizePathLayer;
 use tower_http::services::ServeDir;
+use tower_http::trace::TraceLayer;
+use tower_livereload::LiveReloadLayer;
+use tracing::Level;
 
 struct AppError(anyhow::Error);
 
@@ -39,12 +44,12 @@ where
 #[derive(Deserialize, Debug, Template)]
 #[template(path = "lick_pdf.html")]
 pub struct PdfDisplay {
-    pub pdf: String,
+    pub lick: Lick,
 }
 
 impl PdfDisplay {
-    fn new(name: String) -> Self {
-        let pd = PdfDisplay { pdf: name };
+    fn new(in_lick: Lick) -> Self {
+        let pd = PdfDisplay { lick: in_lick };
         return pd;
     }
 }
@@ -63,15 +68,19 @@ impl IndexTemplate {
 
 #[derive(Template)]
 #[template(path = "lick.html")]
-struct CreateLickTemplate {
+struct LickTemplate {
     pub lick: Lick,
 }
 
-impl CreateLickTemplate {
+impl LickTemplate {
     fn new(lick: Lick) -> Self {
-        return CreateLickTemplate { lick };
+        return LickTemplate { lick };
     }
 }
+
+#[derive(Template)]
+#[template(path = "empty_pdf.html")]
+struct EmptyPdfTemplate {}
 
 #[derive(Deserialize)]
 pub struct DbQuery {
@@ -119,10 +128,10 @@ async fn list_licks(State(pool): State<MySqlPool>) -> Result<IndexTemplate, AppE
     return Ok(IndexTemplate::new(licks));
 }
 
-async fn grab_file(pool: &MySqlPool, id: i32) -> Result<String, anyhow::Error> {
+async fn grab_file(pool: &MySqlPool, id: i32) -> Result<Lick, anyhow::Error> {
     let tmp: String = format!("SELECT id,name,filename,learned from Licks where id={}", id);
     let lick: Lick = sqlx::query_as(&tmp).fetch_one(pool).await?;
-    return Ok(lick.filename);
+    return Ok(lick);
 }
 
 async fn add_lick_db(
@@ -161,13 +170,13 @@ async fn check_incoming_pdf(
 async fn upload_lick_pdf(
     State(pool): State<MySqlPool>,
     data: TypedMultipart<PdfForm>,
-) -> Result<CreateLickTemplate, AppError> {
+) -> Result<LickTemplate, AppError> {
     let res = check_incoming_pdf(&pool, &data).await?;
     if res {
         let filename = format!("./data/{}.pdf", data.name.replace(" ", "_"));
         let _ = fs::write(&filename, data.pdf.clone()).await?;
         let id = add_lick_db(&pool, &data.name, &filename).await?;
-        return Ok(CreateLickTemplate::new(get_lick(&pool, id).await?));
+        return Ok(LickTemplate::new(get_lick(&pool, id).await?));
     }
 
     return Err(anyhow!(StatusCode::NOT_ACCEPTABLE).into());
@@ -177,10 +186,11 @@ async fn serve_pdf(
     Query(params): Query<DbQuery>,
     State(pool): State<MySqlPool>,
 ) -> Result<PdfDisplay, AppError> {
-    let filename = grab_file(&pool, params.id).await?;
-    let file = filename.split(".").collect::<Vec<&str>>()[1];
+    let mut lick = grab_file(&pool, params.id).await?;
+    let file = lick.filename.split(".").collect::<Vec<&str>>()[1];
     let file = file.to_owned() + ".pdf";
-    return Ok(PdfDisplay::new(file));
+    lick.filename = file;
+    return Ok(PdfDisplay::new(lick));
 }
 
 async fn del_lick(pool: &MySqlPool, id: i32) -> Result<i32, anyhow::Error> {
@@ -206,7 +216,7 @@ async fn delete_entry(
     return Ok(IndexTemplate::new(list));
 }
 
-async fn grab_random_file(pool: &MySqlPool) -> Result<String, anyhow::Error> {
+async fn grab_random_file(pool: &MySqlPool) -> Result<Lick, anyhow::Error> {
     let id_query = format!("SELECT id,name,filename,learned from Licks");
     let ids: Vec<Lick> = sqlx::query_as(&id_query).fetch_all(pool).await?;
     let random_id = rand::thread_rng().gen_range(0..ids.len());
@@ -215,12 +225,31 @@ async fn grab_random_file(pool: &MySqlPool) -> Result<String, anyhow::Error> {
         ids[random_id].id
     );
     let lick: Lick = sqlx::query_as(&tmp).fetch_one(pool).await?;
-    return Ok(lick.filename);
+    return Ok(lick);
 }
 
 async fn random_lick(State(pool): State<MySqlPool>) -> Result<PdfDisplay, AppError> {
     let file = grab_random_file(&pool).await?;
     return Ok(PdfDisplay::new(file));
+}
+
+async fn set_learned(pool: &MySqlPool, id: i32) -> Result<i32, anyhow::Error> {
+    let update_query = format!("UPDATE Licks set learned=1 where id={id}");
+    sqlx::query(&update_query).execute(pool).await?;
+    return Ok(id);
+}
+
+async fn set_entry_learned(
+    State(pool): State<MySqlPool>,
+    Path(id): Path<i32>,
+) -> Result<LickTemplate, AppError> {
+    let id = set_learned(&pool, id).await?;
+    let lick = get_lick(&pool, id).await?;
+    return Ok(LickTemplate::new(lick));
+}
+
+async fn close_pdf() -> Result<EmptyPdfTemplate, AppError> {
+    return Ok(EmptyPdfTemplate {});
 }
 
 #[tokio::main]
@@ -234,28 +263,28 @@ async fn main() -> anyhow::Result<()> {
 
     let assets_path = std::env::current_dir().unwrap();
 
-    //let service = ServiceBuilder::new()
-    //    .layer(TraceLayer::new_for_http())
-    //    .layer(NormalizePathLayer::trim_trailing_slash())
-    //    .layer(LiveReloadLayer::new());
+    let service = ServiceBuilder::new()
+        .layer(TraceLayer::new_for_http())
+        .layer(NormalizePathLayer::trim_trailing_slash())
+        .layer(LiveReloadLayer::new());
 
     let app = Router::new()
         .route("/", get(index).post(upload_lick_pdf))
-        .route("/lick/:id", delete(delete_entry))
+        .route("/lick/:id", delete(delete_entry).put(set_entry_learned))
         .route("/rand", get(random_lick))
         .route("/licks", get(list_licks))
-        .route("/pdf", get(serve_pdf))
+        .route("/pdf", get(serve_pdf).put(close_pdf))
         .nest_service("/data", ServeDir::new("./data"))
         .nest_service(
             "/assets",
             ServeDir::new(format!("{}/assets", assets_path.to_str().unwrap())),
         )
-        //    .layer(service)
+        .layer(service)
         .with_state(pool);
 
-    //tracing_subscriber::fmt::Subscriber::builder()
-    //    .with_max_level(Level::TRACE)
-    //    .init();
+    tracing_subscriber::fmt::Subscriber::builder()
+        .with_max_level(Level::TRACE)
+        .init();
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
     axum::serve(listener, app).await?;
