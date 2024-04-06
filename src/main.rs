@@ -13,12 +13,12 @@ use rand::Rng;
 use serde::Deserialize;
 use sqlx::MySqlPool;
 use tokio::fs::{self, remove_file};
-use tower::ServiceBuilder;
-use tower_http::normalize_path::NormalizePathLayer;
+//use tower::ServiceBuilder;
+//use tower_http::normalize_path::NormalizePathLayer;
 use tower_http::services::ServeDir;
-use tower_http::trace::TraceLayer;
-use tower_livereload::LiveReloadLayer;
-use tracing::Level;
+//use tower_http::trace::TraceLayer;
+//use tower_livereload::LiveReloadLayer;
+//use tracing::Level;
 
 struct AppError(anyhow::Error);
 
@@ -263,10 +263,10 @@ async fn main() -> anyhow::Result<()> {
 
     let assets_path = std::env::current_dir().unwrap();
 
-    let service = ServiceBuilder::new()
-        .layer(TraceLayer::new_for_http())
-        .layer(NormalizePathLayer::trim_trailing_slash())
-        .layer(LiveReloadLayer::new());
+    //let service = ServiceBuilder::new()
+    //    .layer(TraceLayer::new_for_http())
+    //    .layer(NormalizePathLayer::trim_trailing_slash())
+    //    .layer(LiveReloadLayer::new());
 
     let app = Router::new()
         .route("/", get(index).post(upload_lick_pdf))
@@ -279,12 +279,12 @@ async fn main() -> anyhow::Result<()> {
             "/assets",
             ServeDir::new(format!("{}/assets", assets_path.to_str().unwrap())),
         )
-        .layer(service)
+        //    .layer(service)
         .with_state(pool);
 
-    tracing_subscriber::fmt::Subscriber::builder()
-        .with_max_level(Level::TRACE)
-        .init();
+    //tracing_subscriber::fmt::Subscriber::builder()
+    //    .with_max_level(Level::TRACE)
+    //    .init();
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
     axum::serve(listener, app).await?;
