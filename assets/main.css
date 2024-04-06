@@ -805,6 +805,10 @@ select {
   height: 2.25rem;
 }
 
+.h-7 {
+  height: 1.75rem;
+}
+
 .max-h-60 {
   max-height: 15rem;
 }
@@ -931,17 +935,22 @@ select {
   padding-bottom: 0.5rem;
 }
 
+.px-1 {
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+
+.py-1 {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
 .text-left {
   text-align: left;
 }
 
 .align-middle {
   vertical-align: middle;
-}
-
-.text-2xl {
-  font-size: 1.5rem;
-  line-height: 2rem;
 }
 
 .text-sm {
@@ -1061,6 +1070,11 @@ select {
 .focus\:text-sail-100:focus {
   --tw-text-opacity: 1;
   color: rgb(228 241 250 / var(--tw-text-opacity));
+}
+
+.focus\:text-sail-50:focus {
+  --tw-text-opacity: 1;
+  color: rgb(242 249 253 / var(--tw-text-opacity));
 }
 
 .focus-visible\:outline-none:focus-visible {

@@ -13,12 +13,12 @@ use rand::Rng;
 use serde::Deserialize;
 use sqlx::MySqlPool;
 use tokio::fs::{self, remove_file};
-//use tower::ServiceBuilder;
-//use tower_http::normalize_path::NormalizePathLayer;
+use tower::ServiceBuilder;
+use tower_http::normalize_path::NormalizePathLayer;
 use tower_http::services::ServeDir;
-//use tower_http::trace::TraceLayer;
-//use tower_livereload::LiveReloadLayer;
-//use tracing::Level;
+use tower_http::trace::TraceLayer;
+use tower_livereload::LiveReloadLayer;
+use tracing::Level;
 
 struct AppError(anyhow::Error);
 
@@ -80,12 +80,16 @@ impl LickTemplate {
 
 #[derive(Template)]
 #[template(path = "empty_pdf.html")]
-struct EmptyPdfTemplate {}
+struct EmptyTemplate {}
 
 #[derive(Deserialize)]
 pub struct DbQuery {
     pub id: i32,
 }
+
+#[derive(Template)]
+#[template(path = "add_lick.html")]
+struct AddLickTemplate {}
 
 #[derive(Deserialize)]
 pub struct DbAdd {
@@ -217,8 +221,11 @@ async fn delete_entry(
 }
 
 async fn grab_random_file(pool: &MySqlPool) -> Result<Lick, anyhow::Error> {
-    let id_query = format!("SELECT id,name,filename,learned from Licks");
+    let id_query = format!("SELECT id,name,filename,learned from Licks where learned=0");
     let ids: Vec<Lick> = sqlx::query_as(&id_query).fetch_all(pool).await?;
+    if ids.len() < 1 {
+        return Err(anyhow!("No Unlearned Licks Available".to_string()));
+    }
     let random_id = rand::thread_rng().gen_range(0..ids.len());
     let tmp: String = format!(
         "SELECT id,name,filename,learned from Licks where id={}",
@@ -248,8 +255,12 @@ async fn set_entry_learned(
     return Ok(LickTemplate::new(lick));
 }
 
-async fn close_pdf() -> Result<EmptyPdfTemplate, AppError> {
-    return Ok(EmptyPdfTemplate {});
+async fn close_pdf() -> Result<EmptyTemplate, AppError> {
+    return Ok(EmptyTemplate {});
+}
+
+async fn add_lick() -> Result<AddLickTemplate, AppError> {
+    return Ok(AddLickTemplate {});
 }
 
 #[tokio::main]
@@ -263,14 +274,15 @@ async fn main() -> anyhow::Result<()> {
 
     let assets_path = std::env::current_dir().unwrap();
 
-    //let service = ServiceBuilder::new()
-    //    .layer(TraceLayer::new_for_http())
-    //    .layer(NormalizePathLayer::trim_trailing_slash())
-    //    .layer(LiveReloadLayer::new());
+    let service = ServiceBuilder::new()
+        .layer(TraceLayer::new_for_http())
+        .layer(NormalizePathLayer::trim_trailing_slash())
+        .layer(LiveReloadLayer::new());
 
     let app = Router::new()
         .route("/", get(index).post(upload_lick_pdf))
         .route("/lick/:id", delete(delete_entry).put(set_entry_learned))
+        .route("/add", get(add_lick))
         .route("/rand", get(random_lick))
         .route("/licks", get(list_licks))
         .route("/pdf", get(serve_pdf).put(close_pdf))
@@ -279,12 +291,12 @@ async fn main() -> anyhow::Result<()> {
             "/assets",
             ServeDir::new(format!("{}/assets", assets_path.to_str().unwrap())),
         )
-        //    .layer(service)
+        .layer(service)
         .with_state(pool);
 
-    //tracing_subscriber::fmt::Subscriber::builder()
-    //    .with_max_level(Level::TRACE)
-    //    .init();
+    tracing_subscriber::fmt::Subscriber::builder()
+        .with_max_level(Level::TRACE)
+        .init();
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
     axum::serve(listener, app).await?;

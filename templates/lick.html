@@ -2,19 +2,6 @@
     <td class="p-2 align-middle [&amp;:has([role=checkbox])]:pr-0"> {{ lick.name }} </td>
     <td class="p-2 align-middle [&amp;:has([role=checkbox])]:pr-0"> {{ lick.learned }} </td>
     <td class="p-2 align-middle [&amp;:has([role=checkbox])]:pr-0 flex justify-end">
-        <form hx-delete="/lick/{{lick.id}}" hx-target="#lick-{{ lick.id }}" hx-swap="delete">
-            <button
-                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-sail-950 bg-sail-800 h-9 w-9"
-                value={{ lick.id }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    class="w-4 h-4">
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                </svg>
-            </button>
-        </form>
         <div hx-include="#view-form">
             <form id="view-form" hx-get="/pdf" hx-params="id" hx-target="#ViewDiv">
                 <button
@@ -29,5 +16,18 @@
                 </button>
             </form>
         </div>
+        <form hx-delete="/lick/{{lick.id}}" hx-target="#lick-{{ lick.id }}" hx-swap="delete">
+            <button
+                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-sail-950 bg-sail-800 h-9 w-9"
+                value={{ lick.id }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="w-4 h-4">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                </svg>
+            </button>
+        </form>
     </td>
 </tr>

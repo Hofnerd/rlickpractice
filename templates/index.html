@@ -4,16 +4,23 @@
 {% block content %}
 
 <div>
-    <header class="flex bg-sail-950 text-sail-50 items-center justify-between px-2 py-2 rounded-b-sm">
+    <header class="flex bg-sail-950 text-sail-50 items-center justify-between px-1 py-1 rounded-b-sm">
         <div>
-            <img class="h-8" alt="WIP"></img>
+            <img src="assets/low-poly-grid-haikei.svg" class="h-7" alt="WIP"></img>
         </div>
         <div>
-            <button type="submit" class="h-6 w-6 text-sail-500 hover:text-sail-100 focus:text-sail-100 block">
-                <svg class="h-6 w-6 fill-current" viewBox="0 0 24 24">
-                    <path fill-rule="evenodd" d="M4 5h16a1 1 0 0 1 0 2H4a1 1 0 1 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2z"/>
-                </svg>
-            </button>
+            <div class="flex">
+                <button type="submit" class="h-6 w-6 text-sail-500 hover:text-sail-100 focus:text-sail-100 block" hx-get="/add" hx-target="#addLickView">
+                    <svg class="h-6 w-6 fill-current bg-sail-800 rounded-lg" viewBox="0 0 24 24">
+                        <path d="M24 10h-10v-10h-4v10h-10v4h10v10h4v-10h10z"></path>
+                    </svg>
+                </button>
+                <button type="submit" class="h-6 w-6 text-sail-500 hover:text-sail-100 focus:text-sail-100 block">
+                    <svg class="h-6 w-6 fill-current" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" d="M4 5h16a1 1 0 0 1 0 2H4a1 1 0 1 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2z"/>
+                    </svg>
+                </button>
+            </div>
         </div>
     </header>
 </div>
@@ -22,42 +29,10 @@
     {% include "licks_table.html" %}
 </div>
 <br>
-<div class="text-sail-700">
-    <div class="font-extrabold">
-        <span>Insert New Lick</span>
-    </div>
-    <form hx-post="/" hx-target="#table-content" hx-swap="beforeend" enctype="multipart/form-data">
-        <div class="rounded-lg border bg-card text-card-foreground shadow-sm" data-v0-t="card">
-            <div class="p-6 space-y-6">
-                <div class="grid gap-2 text-sm">
-                    <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="name">
-                        Name
-                    </label>
-                    <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-sail-600" id="name" name="name" placeholder="Name"/>
-                </div>
-                <div class="grid gap-2 text-sm">
-                    <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="file">
-                        File
-                    </label>
-                    <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-sail-600" id="pdf" name="pdf" type="file" />
-                </div>
-                <div>
-                    <button class="inline-flex items-center justify-center whitespace-nowrap rounded-lg shadow text-sm text-sail-100 font-medium transition-colors duration-200 ease-in-out hover:bg-sail-950 bg-sail-800 h-10 px-4 py-2" type="submit">
-                    Submit
-                    </button>
-                </div>
-            </div>
-        </div>
-    </form>
+<div id="addLickView">
+    <!--{% include "add_lick.html" %}-->
 </div>
 </br>
-<div class="border-bg p-2">
-    <div>
-        <span class="text-2xl">Random Lick</span>
-    </div>
-    <button class="inline-flex items-center justify-center whitespace-nowrap rounded-lg shadow text-sm text-black font-medium transition-colors duration-200 ease-in-out hover:bg-sail-950 bg-sail-800 h-10 px-4 py-2" hx-get="/rand" hx-target="#ViewDiv">Random</button>
-</div>
-<br><br><br>
 <div>
     <div id="ViewDiv"></div>
 </div>
