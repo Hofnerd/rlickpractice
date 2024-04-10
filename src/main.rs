@@ -164,7 +164,6 @@ async fn check_incoming_pdf(
 ) -> Result<bool, AppError> {
     let filename = format!("./data/{}.pdf", data.name);
     let query = format!("select id from Licks where filename=\"{}\"", filename);
-    println!("{}", &query);
     let _ = match sqlx::query(&query).fetch_one(pool).await {
         Ok(_) => return Ok(false),
         Err(_) => return Ok(true),
