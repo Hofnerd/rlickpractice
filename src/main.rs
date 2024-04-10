@@ -13,7 +13,7 @@ use rand::Rng;
 use serde::Deserialize;
 use sqlx::MySqlPool;
 use tokio::fs::{self, remove_file};
-use tower::ServiceBuilder;
+//use tower::ServiceBuilder;
 //use tower_http::normalize_path::NormalizePathLayer;
 use tower_http::services::ServeDir;
 //use tower_http::trace::TraceLayer;
@@ -291,7 +291,7 @@ async fn main() -> anyhow::Result<()> {
             "/assets",
             ServeDir::new(format!("{}/assets", assets_path.to_str().unwrap())),
         )
-        //    .layer(service)
+        //.layer(service)
         .with_state(pool);
 
     //tracing_subscriber::fmt::Subscriber::builder()

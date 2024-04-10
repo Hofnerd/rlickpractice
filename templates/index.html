@@ -9,12 +9,12 @@
             <img src="assets/low-poly-grid-haikei.svg" class="h-7" alt="WIP"></img>
         </div>
         <div>
+            <button type="submit" class="h-6 w-6 text-sail-500 hover:text-sail-100 focus:text-saill-100 block" hx-target="#ViewDiv" hx-get="/rand">
+            Random
+            </button>
+        </div>
+        <div>
             <div class="flex">
-                <button type="submit" class="h-6 w-6 text-sail-500 hover:text-sail-100 focus:text-sail-100 block" hx-get="/add" hx-target="#addLickView">
-                    <svg class="h-6 w-6 fill-current bg-sail-800 rounded-lg" viewBox="0 0 24 24">
-                        <path d="M24 10h-10v-10h-4v10h-10v4h10v10h4v-10h10z"></path>
-                    </svg>
-                </button>
                 <button type="submit" class="h-6 w-6 text-sail-500 hover:text-sail-100 focus:text-sail-100 block">
                     <svg class="h-6 w-6 fill-current" viewBox="0 0 24 24">
                         <path fill-rule="evenodd" d="M4 5h16a1 1 0 0 1 0 2H4a1 1 0 1 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2z"/>
@@ -25,15 +25,18 @@
     </header>
 </div>
 
-<div id="licks_table">
+<div id="licks_table" class="border shadow px-1">
     {% include "licks_table.html" %}
 </div>
 <br>
-<div id="addLickView">
-    <!--{% include "add_lick.html" %}-->
+<div class="px-1" id="addLickView">
+    {% include "add_lick.html" %}
 </div>
 </br>
-<div>
-    <div id="ViewDiv"></div>
+<div> 
+    <div class="font-extrabold text-sail-700 border rounded-md shadow">
+        <span>Display</span>
+        <div id="ViewDiv"></div>
+    </div>
 </div>
 {% endblock %}
